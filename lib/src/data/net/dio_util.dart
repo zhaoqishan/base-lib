@@ -77,6 +77,9 @@ class DioUtil {
   static final DioUtil _singleton = DioUtil._init();
   static Dio _dio;
 
+  /// api地址.
+  static String _baseUri;
+
   /// BaseResp [String status]字段 key, 默认：status.，
   String _statusKey = "status";
 
@@ -133,6 +136,7 @@ class DioUtil {
 
   /// set Config.
   void setConfig(HttpConfig config) {
+    _baseUri = config.baseUri ?? _baseUri;
     _statusKey = config.status ?? _statusKey;
     _codeKey = config.code ?? _codeKey;
     _msgKey = config.msg ?? _msgKey;
@@ -356,6 +360,7 @@ class DioUtil {
 
   /// merge Option.
   void _mergeOption(Options opt) {
+    _options.baseUrl = _baseUri;
     _options.method = opt.method ?? _options.method;
     _options.headers = (new Map.from(_options.headers))..addAll(opt.headers);
     _options.baseUrl = _options.baseUrl;
@@ -427,7 +432,7 @@ class DioUtil {
   static BaseOptions getDefOptions() {
     BaseOptions options = new BaseOptions();
     // options.contentType =
-    ContentType.parse("application/x-www-form-urlencoded");
+    // ContentType.parse("application/x-www-form-urlencoded");
     options.contentType = "application/x-www-form-urlencoded";
     options.connectTimeout = 1000 * 30;
     options.receiveTimeout = 1000 * 30;
