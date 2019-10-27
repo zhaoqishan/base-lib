@@ -364,7 +364,7 @@ class DioUtil {
     _options.responseType = opt.responseType ?? _options.responseType;
     //_options.data = opt.data ?? _options.data;
     _options.extra = (new Map.from(_options.extra))..addAll(opt.extra);
-    _options.contentType(opt.contentType ?? _options.contentType);
+    _options.contentType = opt.contentType ?? _options.contentType;
     _options.validateStatus = opt.validateStatus ?? _options.validateStatus;
     _options.followRedirects = opt.followRedirects ?? _options.followRedirects;
   }
@@ -426,7 +426,9 @@ class DioUtil {
   /// get Def Options.
   static BaseOptions getDefOptions() {
     BaseOptions options = new BaseOptions();
-    options.contentType(ContentType.parse("application/x-www-form-urlencoded"));
+    // options.contentType =
+    ContentType.parse("application/x-www-form-urlencoded");
+    options.contentType = "application/x-www-form-urlencoded";
     options.connectTimeout = 1000 * 30;
     options.receiveTimeout = 1000 * 30;
     return options;
