@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:dio/dio.dart';
-
+import 'package:dio/adapter.dart';
 import '../protocol/base_resp.dart';
 
 /**
@@ -123,6 +123,10 @@ class DioUtil {
     _dio.options.headers.addAll(_headers);
   }
 
+  Future<MultipartFile> getFileData(String filePath, {String fileName}) async {
+    return await MultipartFile.fromFile(filePath, filename: fileName);
+  }
+
   /// set Config.
   void setConfig(HttpConfig config) {
     _statusKey = config.status ?? _statusKey;
@@ -203,14 +207,14 @@ class DioUtil {
       } catch (e) {
         return new Future.error(new DioError(
           response: response,
-          message: "data parsing exception...",
+          error: "data parsing exception...",
           type: DioErrorType.RESPONSE,
         ));
       }
     }
     return new Future.error(new DioError(
       response: response,
-      message: "statusCode: $response.statusCode, service error",
+      error: "statusCode: $response.statusCode, service error",
       type: DioErrorType.RESPONSE,
     ));
   }
@@ -259,14 +263,14 @@ class DioUtil {
       } catch (e) {
         return new Future.error(new DioError(
           response: response,
-          message: "data parsing exception...",
+          error: "data parsing exception...",
           type: DioErrorType.RESPONSE,
         ));
       }
     }
     return new Future.error(new DioError(
       response: response,
-      message: "statusCode: $response.statusCode, service error",
+      error: "statusCode: $response.statusCode, service error",
       type: DioErrorType.RESPONSE,
     ));
   }
@@ -314,12 +318,12 @@ class DioUtil {
     _options.method = opt.method ?? _options.method;
     _options.headers = (new Map.from(_options.headers))..addAll(opt.headers);
     _options.baseUrl = _options.baseUrl;
-    _options.connectTimeout = opt.connectTimeout ?? _options.connectTimeout;
+    _options.connectTimeout = opt.sendTimeout ?? _options.connectTimeout;
     _options.receiveTimeout = opt.receiveTimeout ?? _options.receiveTimeout;
     _options.responseType = opt.responseType ?? _options.responseType;
     //_options.data = opt.data ?? _options.data;
     _options.extra = (new Map.from(_options.extra))..addAll(opt.extra);
-    _options.contentType = opt.contentType ?? _options.contentType;
+    _options.contentType(opt.contentType ?? _options.contentType);
     _options.validateStatus = opt.validateStatus ?? _options.validateStatus;
     _options.followRedirects = opt.followRedirects ?? _options.followRedirects;
   }
@@ -381,8 +385,7 @@ class DioUtil {
   /// get Def Options.
   static BaseOptions getDefOptions() {
     BaseOptions options = new BaseOptions();
-    options.contentType =
-        ContentType.parse("application/x-www-form-urlencoded");
+    options.contentType(ContentType.parse("application/x-www-form-urlencoded"));
     options.connectTimeout = 1000 * 30;
     options.receiveTimeout = 1000 * 30;
     return options;
