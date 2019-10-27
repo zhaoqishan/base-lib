@@ -5,14 +5,10 @@ import 'package:dio/dio.dart';
 import 'package:dio/adapter.dart';
 import '../protocol/base_resp.dart';
 
-/**
- * @Author: thl
- * @GitHub: https://github.com/Sky24n
- * @JianShu: https://www.jianshu.com/u/cbf2ad25d33a
- * @Email: 863764940@qq.com
- * @Description: Dio Util.
- * @Date: 2018/12/19
- */
+class DioConstant {
+  static const int status_success = 1;
+  static const int status_fail = 0;
+}
 
 /// 请求方法.
 class Method {
@@ -28,15 +24,20 @@ class Method {
 class HttpConfig {
   /// constructor.
   HttpConfig({
+    this.baseUri,
     this.status,
     this.code,
     this.msg,
     this.data,
+    this.subData,
     this.options,
     this.pem,
     this.pKCSPath,
     this.pKCSPwd,
   });
+
+  /// api地址.
+  String baseUri;
 
   /// BaseResp [String status]字段 key, 默认：status.
   String status;
@@ -49,6 +50,9 @@ class HttpConfig {
 
   /// BaseResp [T data]字段 key, 默认：data.
   String data;
+
+  /// BaseResp [T data]字段子 key, items.
+  String subData;
 
   /// Options.
   Options options;
@@ -73,7 +77,7 @@ class DioUtil {
   static final DioUtil _singleton = DioUtil._init();
   static Dio _dio;
 
-  /// BaseResp [String status]字段 key, 默认：status.
+  /// BaseResp [String status]字段 key, 默认：status.，
   String _statusKey = "status";
 
   /// BaseResp [int code]字段 key, 默认：errorCode.
@@ -171,10 +175,18 @@ class DioUtil {
   /// <BaseResp<T> 返回 status code msg data .
   Future<BaseResp<T>> request<T>(String method, String path,
       {data, Options options, CancelToken cancelToken}) async {
-    Response response = await _dio.request(path,
-        data: data,
-        options: _checkOptions(method, options),
-        cancelToken: cancelToken);
+    Response response = new Response();
+    if (method.toLowerCase() == "get") {
+      response = await _dio.request(path,
+          queryParameters: data,
+          options: _checkOptions(method, options),
+          cancelToken: cancelToken);
+    } else {
+      response = await _dio.request(path,
+          data: data,
+          options: _checkOptions(method, options),
+          cancelToken: cancelToken);
+    }
     _printHttpLog(response);
     String _status;
     int _code;
@@ -184,22 +196,35 @@ class DioUtil {
         response.statusCode == HttpStatus.created) {
       try {
         if (response.data is Map) {
-          _status = (response.data[_statusKey] is int)
-              ? response.data[_statusKey].toString()
-              : response.data[_statusKey];
-          _code = (response.data[_codeKey] is String)
-              ? int.tryParse(response.data[_codeKey])
-              : response.data[_codeKey];
+          // _status = (response.data[_statusKey] is int)
+          //     ? response.data[_statusKey].toString()
+          //     : response.data[_statusKey];
+          _status = response.data[_statusKey].toString();
+          // _code = (response.data[_codeKey] is String)
+          //     ? int.tryParse(response.data[_codeKey])
+          //     : response.data[_codeKey];
+          _code = response.data[_statusKey]
+              ? DioConstant.status_success
+              : DioConstant.status_fail;
           _msg = response.data[_msgKey];
+          // _data = response.data[_dataKey] is Map
+          //     ? <String, dynamic>{
+          //         _subDataKey: response.data[_dataKey][_subDataKey]
+          //       }
+          //     : response.data[_dataKey];
           _data = response.data[_dataKey];
         } else {
           Map<String, dynamic> _dataMap = _decodeData(response);
-          _status = (_dataMap[_statusKey] is int)
-              ? _dataMap[_statusKey].toString()
-              : _dataMap[_statusKey];
-          _code = (_dataMap[_codeKey] is String)
-              ? int.tryParse(_dataMap[_codeKey])
-              : _dataMap[_codeKey];
+          // _status = (_dataMap[_statusKey] is int)
+          //     ? _dataMap[_statusKey].toString()
+          //     : _dataMap[_statusKey];
+          _status = _dataMap[_statusKey].toString();
+          // _code = (_dataMap[_codeKey] is String)
+          //     ? int.tryParse(_dataMap[_codeKey])
+          //     : _dataMap[_codeKey];
+          _code = _dataMap[_statusKey]
+              ? DioConstant.status_success
+              : DioConstant.status_fail;
           _msg = _dataMap[_msgKey];
           _data = _dataMap[_dataKey];
         }
@@ -227,10 +252,18 @@ class DioUtil {
   /// <BaseRespR<T> 返回 status code msg data  Response.
   Future<BaseRespR<T>> requestR<T>(String method, String path,
       {data, Options options, CancelToken cancelToken}) async {
-    Response response = await _dio.request(path,
-        data: data,
-        options: _checkOptions(method, options),
-        cancelToken: cancelToken);
+    Response response = new Response();
+    if (method.toLowerCase() == "get") {
+      response = await _dio.request(path,
+          queryParameters: data,
+          options: _checkOptions(method, options),
+          cancelToken: cancelToken);
+    } else {
+      response = await _dio.request(path,
+          data: data,
+          options: _checkOptions(method, options),
+          cancelToken: cancelToken);
+    }
     _printHttpLog(response);
     String _status;
     int _code;
@@ -240,22 +273,30 @@ class DioUtil {
         response.statusCode == HttpStatus.created) {
       try {
         if (response.data is Map) {
-          _status = (response.data[_statusKey] is int)
-              ? response.data[_statusKey].toString()
-              : response.data[_statusKey];
-          _code = (response.data[_codeKey] is String)
-              ? int.tryParse(response.data[_codeKey])
-              : response.data[_codeKey];
+          // _status = (response.data[_statusKey] is int)
+          //     ? response.data[_statusKey].toString()
+          //     : response.data[_statusKey];
+          _status = response.data[_statusKey].toString();
+          // _code = (response.data[_codeKey] is String)
+          //     ? int.tryParse(response.data[_codeKey])
+          //     : response.data[_codeKey];
+          _code = response.data[_statusKey]
+              ? DioConstant.status_success
+              : DioConstant.status_fail;
           _msg = response.data[_msgKey];
           _data = response.data[_dataKey];
         } else {
           Map<String, dynamic> _dataMap = _decodeData(response);
-          _status = (_dataMap[_statusKey] is int)
-              ? _dataMap[_statusKey].toString()
-              : _dataMap[_statusKey];
-          _code = (_dataMap[_codeKey] is String)
-              ? int.tryParse(_dataMap[_codeKey])
-              : _dataMap[_codeKey];
+          // _status = (_dataMap[_statusKey] is int)
+          //     ? _dataMap[_statusKey].toString()
+          //     : _dataMap[_statusKey];
+          _status = _dataMap[_statusKey].toString();
+          // _code = (_dataMap[_codeKey] is String)
+          //     ? int.tryParse(_dataMap[_codeKey])
+          //     : _dataMap[_codeKey];
+          _code = _dataMap[_statusKey]
+              ? DioConstant.status_success
+              : DioConstant.status_fail;
           _msg = _dataMap[_msgKey];
           _data = _dataMap[_dataKey];
         }
@@ -263,7 +304,7 @@ class DioUtil {
       } catch (e) {
         return new Future.error(new DioError(
           response: response,
-          error: "data parsing exception...",
+          error: "data parsing exception...$e",
           type: DioErrorType.RESPONSE,
         ));
       }
