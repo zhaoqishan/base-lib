@@ -22,7 +22,7 @@ dependencies:
   fluintl: ^0.1.3
 
   # https://github.com/flutterchina/dio
-  dio: 3.0.3
+  dio: ">=3.0.3 <6.0.0"
   
 
 
